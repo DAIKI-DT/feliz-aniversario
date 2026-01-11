@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>💖 Feliz Aniversário, Meu Amor 💖</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --primary-love: #ff4b2b;
+      --secondary-love: #ff416c;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .display-love { font-family: 'Great Vibes', cursive; }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      padding: 30px;
+      margin-bottom: 60px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    /* RASPADINHA */
+    .scratch-container {
+      position: relative;
+      width: 300px; height: 300px;
+      margin: 0 auto;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    #scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; z-index: 2; }
+    #revealed-img { width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+
+    /* CARTAS */
+    .poem-container { min-height: 350px; display: flex; align-items: center; justify-content: center; }
+    .poem-card {
+      background: white; color: #333; padding: 35px; border-radius: 15px;
+      max-width: 600px; width: 100%; border-left: 10px solid var(--secondary-love);
+      position: relative; box-shadow: 10px 10px 20px rgba(0,0,0,0.1);
+    }
+    .typewriter-text { font-style: italic; line-height: 1.6; font-size: 1.2rem; min-height: 120px; }
+
+    /* CARROSSEIS */
+    .carousel-item { height: 50vh; min-height: 300px; max-height: 500px; }
+    .carousel-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+
+    /* CUPONS */
+    .coupon {
+      background: white; color: var(--secondary-love); border: 2px dashed var(--secondary-love);
+      border-radius: 10px; padding: 15px; margin: 10px; width: 250px; cursor: pointer;
+    }
+    .coupon.disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; }
+    .coupon.selected { background: var(--secondary-love); color: white; transform: scale(1.05); }
+
+    .btn-love { background: var(--secondary-love); color: white; border-radius: 50px; padding: 10px 25px; border: none; }
+    #music-control { position: fixed; top: 20px; right: 20px; z-index: 1000; background: white; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; }
+    .heart { position: fixed; bottom: -50px; font-size: 24px; animation: floatUp 8s linear infinite; z-index: 0; }
+    @keyframes floatUp { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 0.8; } 100% { transform: translateY(-110vh); opacity: 0; } }
+
+.memory-card {
+  width: 80px;
+  height: 80px;
+  background: var(--secondary-love);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  cursor: pointer;
+  user-select: none;
+  color: transparent;
+}
+
+.memory-card.flipped,
+.memory-card.matched {
+  background: white;
+  color: var(--secondary-love);
+  cursor: default;
+}
+
+.card-symbol {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.memory-card.flipped .card-symbol,
+.memory-card.matched .card-symbol {
+  opacity: 1;
+}
+
+.memory-card {
+  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+
+  </style>
+</head>
+<body>
+
+<div id="music-control" onclick="toggleMusic()">🔇</div>
+<audio id="bg-music" loop>
+    <source src="Dj Verigal x Meyson Sopinje - Calafrio ( Official Vídeo ).mp3" type="audio/mpeg">
+</audio>
+
+<header class="container text-center py-5">
+  <h1 class="display-1 animate__animated animate__heartBeat">Feliz Aniversário, Vida! 💕</h1>
+</header>
+
+<main class="container">
+
+<section class="glass-card text-center animate__animated animate__fadeIn">
+  <h2 class="display-love mb-3" style="font-size: 3rem;">⏳ Nosso Tempo Juntos</h2>
+  <p class="fs-5">Desde <strong>01 de Janeiro de 2023</strong></p>
+  <div id="love-timer" class="fs-3 fw-bold"></div>
+</section>
+
+
+  <section class="glass-card text-center animate__animated animate__fadeIn">
+    <h2 class="display-love mb-3" style="font-size: 3rem;">Onde tudo começou...</h2>
+    <p>Raspe a imagem para revelar nossa primeira lembrança!</p>
+    <div class="scratch-container">
+        <img src="Foto16.jpeg" id="revealed-img">
+        <canvas id="scratch-canvas"></canvas>
+    </div>
+    <div id="btn-historia-container" class="mt-4" style="display:none;">
+        <button class="btn btn-love btn-lg animate__animated animate__tada" data-bs-toggle="modal" data-bs-target="#modalPoesia">Nossa História em Poesia 📜</button>
+    </div>
+  </section>
+
+  <section class="text-center mb-5">
+    <h2 class="display-love mb-4" style="font-size: 3.2rem;">Minhas Cartas</h2>
+    <div class="poem-container">
+      <div class="poem-card" id="card-box">
+        <div class="typewriter-text" id="poem-text"></div>
+        <div class="mt-3 text-muted small" id="card-index">Carta 1 de 5</div>
+      </div>
+    </div>
+    <div class="mt-4">
+      <button class="btn btn-love me-2" onclick="changeCard(-1)" id="btn-v">Voltar</button>
+      <button class="btn btn-love" onclick="changeCard(1)" id="btn-n">Próxima Carta 💌</button>
+    </div>
+  </section>
+
+  <section class="glass-card text-center">
+    <h2 class="display-love mb-4" style="font-size: 3rem;">📸 Nossa Trajetória</h2>
+    <div id="c1" class="carousel slide carousel-fade" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        <div class="carousel-item active"><img src="Foto8.jpeg"></div>
+        <div class="carousel-item"><img src="Foto9.jpeg"></div>
+        <div class="carousel-item"><img src="Foto10.jpeg"></div>
+      </div>
+      <button class="carousel-control-prev" data-bs-target="#c1" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+      <button class="carousel-control-next" data-bs-target="#c1" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+    </div>
+  </section>
+
+  <section class="glass-card text-center">
+    <h2 class="display-love mb-4" style="font-size: 3rem;">A mulher mais linda do mundo ❤️</h2>
+    <p class="fs-5">"Sou louco por você, hoje e sempre."</p>
+    <div id="c2" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        <div class="carousel-item active"><img src="Foto20.jpeg"></div>
+        <div class="carousel-item"><img src="Foto24.jpeg"></div>
+<div class="carousel-item"><img src="Foto22.jpeg"></div>
+<div class="carousel-item"><img src="Foto19.jpeg"></div>
+<div class="carousel-item"><img src="Foto18.jpeg"></div>
+<div class="carousel-item"><img src="Foto24.jpeg"></div>
+<div class="carousel-item"><img src="Foto3.jpeg"></div>
+<div class="carousel-item"><img src="Foto5.jpeg"></div>
+<div class="carousel-item"><img src="Foto6.jpeg"></div>
+<div class="carousel-item"><img src="Foto7.jpeg"></div>
+<div class="carousel-item"><img src="Foto12.jpeg"></div>
+<div class="carousel-item"><img src="Foto11.jpeg"></div>
+<div class="carousel-item"><img src="Foto1.jpeg"></div>
+      </div>
+    </div>
+  </section>
+
+<section class="glass-card text-center">
+  <h2 class="display-love mb-4" style="font-size: 3rem;">🃏 Jogo do Amor</h2>
+  <p>Encontre todos os pares para desbloquear o presente 🎁</p>
+
+  <div id="memory-game"
+       class="d-grid justify-content-center"
+       style="grid-template-columns: repeat(4, 80px); gap:15px;">
+  </div>
+
+  <div id="game-result" class="fs-3 mt-4 fw-bold"></div>
+</section>
+
+  <section class="glass-card text-center">
+    <h2 class="display-love mb-4" style="font-size: 3rem;">Um Presente Especial (Escolha um)</h2>
+    <div class="d-flex flex-wrap justify-content-center">
+      <div class="coupon" onclick="pickCoupon(this, 'Jantar')">🎟️ Vale um Jantar</div>
+      <div class="coupon" onclick="pickCoupon(this, 'Cafuné')">🎟️ Vale um Cafuné</div>
+      <div class="coupon" onclick="pickCoupon(this, 'Viagem')">🎟️ Vale uma Viagem</div>
+    </div>
+  </section>
+
+  <section class="glass-card text-center pb-5 mb-5">
+    <h2 class="display-love mb-4" style="font-size: 4rem;">💍 Uma Última Pergunta...</h2>
+    <p class="fs-3">Topas ser feliz comigo para sempre?</p>
+    <div class="mt-4">
+      <button class="btn btn-success btn-lg px-5 m-2 shadow" onclick="yes()">SIM 😍</button>
+      <button id="btn-no" class="btn btn-danger btn-lg px-5 m-2 shadow" onmouseover="moveNo()">NÃO 🙈</button>
+    </div>
+    <div id="res" class="mt-4 fs-2 fw-bold"></div>
+  </section>
+
+</main>
+
+<div class="modal fade" id="modalPoesia" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="color: #333;">
+      <div class="modal-body p-5 text-center">
+        <h2 class="display-love text-danger" style="font-size: 3rem;">Nossa História</h2>
+        <p class="fs-5 mt-4" style="line-height: 2;">
+          Tudo começou com um olhar de verdade,<br>
+          Passei a gostar de ti por essa imagem sem qualidade.<br>
+          O que faltava em foco, sobrava em paixão,<br>
+          E você, sem saber, já era dona do meu coração.<br><br>
+          A nossa pequena, anjo que o céu nos enviou,<br>
+          Essa bebê é quem nos uniu e o nosso laço selou.<br>
+          Nossa afilhada querida, prova de um plano maior,<br>
+          Ao teu lado, meu amor, o mundo é muito melhor.
+        </p>
+        <button type="button" class="btn btn-love mt-3" data-bs-dismiss="modal">Continuar Sonhando ❤️</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // 1. RASPADINHA
+  const canvas = document.getElementById('scratch-canvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+
+  function initScratch() {
+    canvas.width = 300; canvas.height = 300;
+    ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0,0,300,300);
+    ctx.globalCompositeOperation = 'destination-out';
+  }
+  function scratch(e) {
+    if(!drawing) return;
+    const r = canvas.getBoundingClientRect();
+    const x = (e.pageX || e.touches[0].pageX) - r.left - window.scrollX;
+    const y = (e.pageY || e.touches[0].pageY) - r.top - window.scrollY;
+    ctx.beginPath(); ctx.arc(x, y, 35, 0, Math.PI*2); ctx.fill();
+    checkScratch();
+  }
+  function checkScratch() {
+    const data = ctx.getImageData(0,0,300,300).data;
+    let count = 0;
+    for(let i=3; i<data.length; i+=4) if(data[i]===0) count++;
+    if(count > (300*300)*0.5) { 
+      canvas.style.display = 'none'; 
+      document.getElementById('btn-historia-container').style.display = 'block'; 
+    }
+  }
+  canvas.addEventListener('mousedown', () => drawing = true);
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mousemove', scratch);
+  canvas.addEventListener('touchstart', (e) => { drawing = true; e.preventDefault(); });
+  canvas.addEventListener('touchmove', (e) => { scratch(e); e.preventDefault(); });
+  initScratch();
+
+  // 2. CARTAS
+  const poems = [
+    "Sabe, aquela foto sem qualidade foi o início do meu melhor capítulo...",
+    "Cada dia ao seu lado é uma nova página que eu amo escrever.",
+    "Obrigado por ser meu porto seguro e minha maior alegria.",
+    "Nossa afilhada nos deu o empurrãozinho que o destino precisava.",
+    "Eu te amo hoje, amanhã e em cada detalhe da nossa eternidade."
+  ];
+  let cur = 0; let t;
+  function showCard(i) {
+    const el = document.getElementById('poem-text');
+    const idx = document.getElementById('card-index');
+    el.innerHTML = ""; clearTimeout(t);
+    idx.innerText = `Carta ${i+1} de 5`;
+    let cidx = 0;
+    function type() {
+      if(cidx < poems[i].length) { el.innerHTML += poems[i].charAt(cidx); cidx++; t = setTimeout(type, 50); }
+    }
+    type();
+    document.getElementById('btn-v').style.display = i === 0 ? 'none' : 'inline-block';
+  }
+  function changeCard(dir) { cur += dir; if(cur >= 0 && cur < 5) showCard(cur); }
+  showCard(0);
+
+  // 3. CUPONS
+  let picked = false;
+  function pickCoupon(el, txt) {
+    if(picked) return;
+    picked = true; el.classList.add('selected');
+    document.querySelectorAll('.coupon').forEach(c => { if(c !== el) c.classList.add('disabled'); });
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    alert("Presente garantido: " + txt + "! ❤️");
+  }
+
+  // 4. MÚSICA E EXTRAS
+  const music = document.getElementById('bg-music');
+  function toggleMusic() { 
+    if(music.paused) { music.play(); document.getElementById('music-control').innerText = "🔊"; }
+    else { music.pause(); document.getElementById('music-control').innerText = "🔇"; }
+  }
+  function moveNo() { 
+    const b = document.getElementById('btn-no');
+    b.style.position = 'fixed'; b.style.left = Math.random()*70+10+'vw'; b.style.top = Math.random()*70+10+'vh';
+  }
+  function yes() { 
+    document.getElementById('res').innerText = "PARA SEMPRE! 💍❤️"; 
+    confetti({ particleCount: 200, spread: 100 });
+  }
+
+  setInterval(() => {
+    const h = document.createElement('div'); h.className = 'heart'; h.innerText = '❤️';
+    h.style.left = Math.random()*100+'vw'; document.body.appendChild(h);
+    setTimeout(() => h.remove(), 8000);
+  }, 700);
+
+/* ⏳ CONTADOR DO TEMPO DO CASAL */
+const startDate = new Date("2023-01-01T00:00:00"); // ALTERE AQUI
+function updateLoveTimer() {
+  const now = new Date();
+  let diff = now - startDate;
+
+  const days = Math.floor(diff / 86400000);
+  diff %= 86400000;
+  const hours = Math.floor(diff / 3600000);
+  diff %= 3600000;
+  const minutes = Math.floor(diff / 60000);
+  const seconds = Math.floor(diff / 1000);
+
+  document.getElementById("love-timer").innerText =
+    `${days} dias, ${hours}h ${minutes}m ${seconds}s ❤️`;
+}
+setInterval(updateLoveTimer, 1000);
+updateLoveTimer();
+
+/* 🎵 MÚSICA NA PRIMEIRA INTERAÇÃO (iOS SAFE) */
+let musicStarted = false;
+document.addEventListener("click", () => {
+  if (!musicStarted) {
+    music.play();
+    document.getElementById("music-control").innerText = "🔊";
+    musicStarted = true;
+  }
+}, { once: true });
+
+/* 🃏 JOGO DA MEMÓRIA */
+const symbols = ["❤️","💍","🌹","💖","❤️","💍","🌹","💖"].sort(() => 0.5 - Math.random());
+const game = document.getElementById("memory-game");
+let firstCard = null;
+let lockBoard = false;
+let matches = 0;
+
+symbols.forEach(symbol => {
+  const card = document.createElement("div");
+  card.className = "memory-card";
+  card.innerHTML = `<span class="card-symbol">${symbol}</span>`;
+
+
+  card.onclick = () => {
+    if (lockBoard || card.classList.contains("flipped")) return;
+
+    card.classList.add("flipped");
+
+    if (!firstCard) {
+      firstCard = card;
+    } else {
+      lockBoard = true;
+      if (firstCard.textContent === card.textContent) {
+        firstCard.classList.add("matched");
+        card.classList.add("matched");
+        matches++;
+        firstCard = null;
+        lockBoard = false;
+
+        if (matches === 4) {
+          document.getElementById("game-result").innerText =
+            "🎉 Presente desbloqueado, meu amor! 💝";
+          confetti({ particleCount: 250, spread: 100 });
+        }
+      } else {
+        setTimeout(() => {
+          firstCard.classList.remove("flipped");
+          card.classList.remove("flipped");
+          firstCard = null;
+          lockBoard = false;
+        }, 800);
+      }
+    }
+  };
+
+  game.appendChild(card);
+});
+
+</script>
+</body>
+</html>
