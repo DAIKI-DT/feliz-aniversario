@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>💕 Jogo para Casais</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Firebase COMPAT -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #ffb6c1, #ffe6ec);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.15);
+      padding: 30px;
+    }
+
+    .btn-love {
+      background-color: #ff4d6d;
+      color: white;
+      border-radius: 30px;
+      padding: 10px 25px;
+    }
+
+    .btn-love:hover {
+      background-color: #e63e5c;
+      color: white;
+    }
+
+    .btn-outline-love {
+      border: 2px solid #ff4d6d;
+      color: #ff4d6d;
+      border-radius: 30px;
+      padding: 10px 25px;
+    }
+
+    .btn-outline-love:hover {
+      background-color: #ff4d6d;
+      color: white;
+    }
+
+    #resultado {
+      font-size: 1.2rem;
+      min-height: 30px;
+    }
+
+    #pergunta {
+      font-size: 1.3rem;
+      min-height: 50px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+
+      <div class="card text-center">
+        <h2 class="mb-4">💕 Jogo para Casais</h2>
+
+        <!-- LOBBY -->
+        <div id="lobby">
+          <button class="btn btn-love w-100 mb-3" onclick="criarSala()">Criar Sala</button>
+          <input id="codigoSala" class="form-control text-center mb-2" placeholder="Código da sala">
+          <button class="btn btn-outline-love w-100" onclick="entrarSala()">Entrar na Sala</button>
+        </div>
+
+        <!-- SALA -->
+        <div id="sala" class="d-none">
+          <p class="text-muted mb-1">Sala:</p>
+          <h4 id="codigo" class="mb-3"></h4>
+
+          <h5 id="pergunta" class="mb-4"></h5>
+
+          <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-success" onclick="responder('Sim')">💖 Sim</button>
+            <button class="btn btn-danger" onclick="responder('Não')">💔 Não</button>
+          </div>
+
+          <div id="resultado" class="fw-bold mb-3"></div>
+
+          <button class="btn btn-love w-100" onclick="proximaPergunta()">➡ Próxima Pergunta</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // 🔥 CONFIG FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLj_hnopDlydVJmcrkx1ll436XYc7gFA0",
+      authDomain: "jogo-casal-64b3b.firebaseapp.com",
+      projectId: "jogo-casal-64b3b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let userId = null;
+    let salaId = null;
+    let perguntaAtual = 0;
+
+    const perguntas = [
+      "💖 Onde nos conhecemos?",
+      "😍 Quem se apaixonou primeiro?",
+      "🌍 Qual é o nosso maior sonho juntos?",
+      "💬 O que mais admiras em mim?",
+      "❤️ Onde queres estar comigo daqui a 5 anos?"
+    ];
+
+    // Login anônimo
+    auth.signInAnonymously()
+      .then(res => userId = res.user.uid)
+      .catch(err => console.error("Erro login anônimo:", err));
+
+    function gerarCodigo() {
+      return Math.random().toString(36).substring(2, 6).toUpperCase();
+    }
+
+    function criarSala() {
+      if(!userId) return alert("Aguarde login...");
+
+      salaId = gerarCodigo();
+
+      db.collection("salas").doc(salaId).set({
+        perguntaAtual: 0,
+        perguntas,
+        respostas: {},
+        compatibilidade: 0,
+        jogadores: { [userId]: true }
+      });
+
+      entrarUI();
+      ouvirSala();
+    }
+
+    function entrarSala() {
+      if(!userId) return alert("Aguarde login...");
+
+      salaId = document.getElementById("codigoSala").value.toUpperCase();
+      if(!salaId) return alert("Digite o código da sala");
+
+      const ref = db.collection("salas").doc(salaId);
+
+      ref.get().then(doc => {
+        if (!doc.exists) return alert("Sala não existe");
+
+        ref.update({ [`jogadores.${userId}`]: true });
+        entrarUI();
+        ouvirSala();
+      });
+    }
+
+    function entrarUI() {
+      document.getElementById("lobby").classList.add("d-none");
+      document.getElementById("sala").classList.remove("d-none");
+      document.getElementById("codigo").innerText = salaId;
+    }
+
+    function ouvirSala() {
+      db.collection("salas").doc(salaId).onSnapshot(doc => {
+        const data = doc.data();
+        if(!data) return;
+
+        perguntaAtual = data.perguntaAtual;
+
+        document.getElementById("pergunta").innerText = data.perguntas[perguntaAtual] || "Fim do jogo!";
+
+        const resp = data.respostas?.[perguntaAtual] || {};
+        if (Object.keys(resp).length === 2) {
+          const iguais = Object.values(resp)[0] === Object.values(resp)[1];
+          document.getElementById("resultado").innerText =
+            iguais ? "💞 Vocês pensam igual!" : "💔 Respostas diferentes";
+        } else {
+          document.getElementById("resultado").innerText = "";
+        }
+      });
+    }
+
+    function responder(valor) {
+      if(!salaId || !userId) return;
+      db.collection("salas").doc(salaId).update({
+        [`respostas.${perguntaAtual}.${userId}`]: valor
+      });
+    }
+
+    function proximaPergunta() {
+      const ref = db.collection("salas").doc(salaId);
+
+      ref.get().then(doc => {
+        const data = doc.data();
+        const resp = data.respostas[perguntaAtual];
+
+        if (!resp || Object.keys(resp).length < 2) {
+          alert("Os dois precisam responder");
+          return;
+        }
+
+        if (Object.values(resp)[0] === Object.values(resp)[1]) {
+          ref.update({
+            compatibilidade: firebase.firestore.FieldValue.increment(1)
+          });
+        }
+
+        ref.update({
+          perguntaAtual: firebase.firestore.FieldValue.increment(1)
+        });
+      });
+    }
+
+  });
+</script>
+
+</body>
+</html>
